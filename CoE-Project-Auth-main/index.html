@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Outpass Portal — Login</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="navbar">
+      <div class="logo">
+        <img src="logo.png" alt="Logo">
+      </div>
+      <div class="brand">Online Outpass System - CIT</div>
+    </header>
+
+    <main class="hero">
+      <div class="hero-card">
+        <h1>College Outpass System</h1>
+        <p>Apply for outpasses, get approvals digitally and let security verify using QR codes — all in one place.</p>
+
+        <div class="login-grid" style="margin-top:18px;">
+          <div class="form" style="max-width:520px; margin:22px auto;">
+            <h2>Login To Outpass System</h2>
+            <form id="loginForm">
+              <label for="email">Email ID</label>
+              <input id="email" type="email" required />
+
+              <label for="password">Password</label>
+              <input id="password" type="password" required />
+
+              <button class="btn" type="submit">Login</button>
+              <p id="errorMsg" style="color:red; margin-top:10px;"></p>
+              <p id="successMsg" style="color:green; margin-top:10px;"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      © 2025 College Outpass System · Built by END2END
+    </footer>
+  </div>
+
+  <!-- ✅ Firebase SDKs (v8 compatible) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <!-- ✅ Firebase Config -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuod_FntPHop86YVkZ6q_8HLRTDZCtg3U",
+      authDomain: "online-outpass.firebaseapp.com",
+      projectId: "online-outpass",
+      storageBucket: "online-outpass.firebasestorage.app",
+      messagingSenderId: "255928719269",
+      appId: "1:255928719269:web:cadbdb632a4dd82e333a4c"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
+
+  <!-- ✅ Login Script -->
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const errorMsg = document.getElementById("errorMsg");
+    const successMsg = document.getElementById("successMsg");
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorMsg.textContent = "";
+      successMsg.textContent = "";
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!email || !password) {
+        errorMsg.textContent = "Please fill in both fields.";
+        return;
+      }
+
+      try {
+        // 🔐 Login user
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        console.log("✅ Logged in Auth UID:", user.uid);
+
+        let userData = null;
+
+        // ⚠️ Collection name should be "user", not "users"
+        const userDoc = await db.collection("user").doc(user.uid).get();
+
+        if (userDoc.exists) {
+          console.log("✅ Found Firestore document using UID as ID");
+          userData = userDoc.data();
+        } else {
+          console.warn("⚠️ No document found by ID. Trying 'uid' field lookup...");
+          const querySnapshot = await db.collection("user").where("uid", "==", user.uid).get();
+          if (!querySnapshot.empty) {
+            userData = querySnapshot.docs[0].data();
+            console.log("✅ Found Firestore document using UID field:", userData);
+          }
+        }
+
+        if (userData) {
+          const role = (userData.role || "").trim().toLowerCase();
+          const name = userData.name || "User";
+
+          // Store session info
+          sessionStorage.setItem("name", name);
+          sessionStorage.setItem("email", email);
+          sessionStorage.setItem("role", role);
+
+          successMsg.textContent = `Welcome, ${name}! Redirecting...`;
+          console.log("👤 Firestore user data:", userData);
+
+          // ✅ Role-based redirect
+          setTimeout(() => {
+            let redirectPage = "";
+
+            if (role === "student") redirectPage = "student.html";
+            else if (role === "class_advisor") redirectPage = "teacher.html";
+            else if (role === "hod") redirectPage = "hod.html";
+            else if (role === "warden") redirectPage = "warden.html";
+            else if (role === "security") redirectPage = "security.html";
+
+            if (redirectPage) {
+              console.log("🔁 Redirecting to:", redirectPage);
+              window.location.href = redirectPage;
+            } else {
+              console.error("❌ Invalid or missing role:", role);
+              errorMsg.textContent = "Invalid role in database. Contact admin.";
+              auth.signOut();
+            }
+          }, 1000);
+        } else {
+          console.error("❌ User record not found in Firestore for UID:", user.uid);
+          errorMsg.textContent = "Account data missing in database. Contact admin.";
+          await auth.signOut();
+        }
+
+      } catch (error) {
+        console.error("❌ Login error:", error);
+        switch (error.code) {
+          case "auth/wrong-password":
+            errorMsg.textContent = "Incorrect password!";
+            break;
+          case "auth/user-not-found":
+            errorMsg.textContent = "No account found with this email!";
+            break;
+          case "auth/invalid-email":
+            errorMsg.textContent = "Invalid email format!";
+            break;
+          default:
+            errorMsg.textContent = "Login failed: " + error.message;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

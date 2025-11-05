@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HOD Dashboard</title>
+  <link rel="stylesheet" href="wardencs.css"/>
+  <script defer src="/js/hod.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="logo">
+        <img src="logo.png" alt="College Logo">
+      </div>
+      <div class="brand">Online Outpass System - CIT</div>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="hod_login.html">Logout</a>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main style="margin-top:18px;">
+      <div class="card">
+        <h2>Requests Forwarded by Staff</h2>
+        <p style="color:var(--muted)">Approve or reject requests forwarded to you by staff members.</p>
+
+        <table class="table" id="hodTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Student</th>
+              <th>Reason</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Staff Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="hodRequests">
+            <!-- Filled dynamically by hod.js -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- Footer -->
+        <footer class="footer">
+      © 2025 College Outpass System · Built by END2END
+    </footer>
+  </div>
+</body>
+</html>
