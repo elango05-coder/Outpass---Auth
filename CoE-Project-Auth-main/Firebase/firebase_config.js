@@ -3,7 +3,7 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-aut
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDuod_FntPHop86YVkZ6q_8HLRTDZCtg3U",
+  apiKey: "your api  name",
   authDomain: "online-outpass.firebaseapp.com",
   projectId: "online-outpass",
   storageBucket: "online-outpass.firebasestorage.app",
@@ -14,5 +14,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+
 
 export { auth };
